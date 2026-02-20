@@ -1,0 +1,2 @@
+Speech based channel quality classification project.
+   - Objective of this project is to classify the wireless channel quality (good/fair/poor) by analyzing spectral and cepstral features extracted from the received speech signal under simluated AWGN channel conditions.
