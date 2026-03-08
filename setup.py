@@ -1,15 +1,15 @@
 from setuptools import find_packages, setup
-from typing import List
+
 
 HYPEN_E_DOT = '-e .'
-def get_requirements(file_path:str) -> List[str]:
+def get_requirements(file_path:str) -> list[str]:
     '''
     This function will return the list of libraries mentioned in requirements.txt
     '''
     requirements = []
-    with open(file_path) as file_obj:
-        requirements = file_obj.readlines()
-        requirements = [req.replace("\n","") for req in requirements]
+    with open(file_path) as file:
+        requirements = file.readlines()
+        requirements = [line.strip() for line in requirements]
 
         if HYPEN_E_DOT in requirements:
             requirements.remove(HYPEN_E_DOT)
