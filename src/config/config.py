@@ -12,4 +12,14 @@ IGNORE_FOLDERS = ['_background_noise_']
 ### Below SNR levels are considered for this project.
 SNR_LEVELS = [20, 10, 5]
 
-# OUTPUT_DATA_PATH
+#### Number of MFCC Features.
+NUM_MFCC = 13
+
+### Frame Length
+FRAME_LENGTH = 2048
+
+### Hop length
+HOP_LENGTH = 512
+
+
+
