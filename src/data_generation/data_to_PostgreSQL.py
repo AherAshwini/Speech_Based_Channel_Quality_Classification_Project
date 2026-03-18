@@ -13,8 +13,3 @@ conn = engine.connect()
 df.to_sql('speech_features', con = conn, index=False, if_exists="append")
 conn.close()
 
-
-
-# ### Load the Pandas dataframe to PostgreSQL 'sinr_data' table.
-# df.to_sql('sinr_data', con=conn, index=False, if_exists="append")
-# conn.close()

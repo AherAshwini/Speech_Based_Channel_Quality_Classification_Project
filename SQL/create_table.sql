@@ -35,6 +35,12 @@ flatness FLOAT8 NULL,
 ste FLOAT8 NULL
 )
 
+
+ALTER TABLE speech_features
+ADD PRIMARY KEY (file, snr)
+
+SELECT * FROM speech_features
+
 CREATE TABLE speech_features_backup AS
 SELECT * FROM speech_features
 
