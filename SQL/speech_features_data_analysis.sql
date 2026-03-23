@@ -69,16 +69,7 @@ GROUP BY snr, channel_quality
 ORDER BY snr DESC
 
 
--- 4)	Compare feature drift across SNR. For some features like spectral flatness, zcr, you may observe that values increase as noise increases. 
-SELECT snr, AVG(zcr) AS avg_zcr, 
-AVG(flatness) AS avg_flatness, 
-AVG(centroid) AS avg_centroid, 
-AVG(ste) AS avg_ste
-FROM speech_features_clean
-GROUP BY snr
-ORDER BY snr DESC
-
--- 5)	Identify most sensitive features i.e. check which feature change the most between good vs poor channel.
+-- 4)	Identify most sensitive features i.e. check which feature change the most between good vs poor channel.
 SELECT 
 ABS(AVG(CASE WHEN channel_quality = 'good' THEN zcr END)-AVG(CASE WHEN channel_quality = 'poor' THEN zcr END)) AS zcr_sensitivity,
 ABS(AVG(CASE WHEN channel_quality = 'good' THEN mfcc_1 END)-AVG(CASE WHEN channel_quality = 'poor' THEN mfcc_1 END)) AS mfcc_1_sensitivity,
@@ -112,7 +103,7 @@ ABS(AVG(CASE WHEN channel_quality = 'good' THEN flatness END)-AVG(CASE WHEN chan
 ABS(AVG(CASE WHEN channel_quality = 'good' THEN ste END)-AVG(CASE WHEN channel_quality = 'poor' THEN ste END)) AS ste_sensitivity
 FROM speech_features_clean
 
--- 6)	Outlier detection i.e. find rows where feature values are extremely high or low.
+-- 5)	Outlier detection i.e. find rows where feature values are extremely high or low.
 --Analysis based on global threshold
 WITH my_cte AS(
 	SELECT
@@ -130,7 +121,7 @@ WHERE s.zcr > zcr_upper OR s.zcr < zcr_lower OR
 	  s.ste > ste_upper OR s.ste < ste_lower 
 
 
---7) Group by snr and then calculate threshold per snr
+--6) Group by snr and then calculate threshold per snr and detect outliers.
 WITH my_cte AS(
 	SELECT snr,
 		AVG(zcr) + 3*STDDEV(zcr) AS zcr_upper, AVG(zcr) - 3*STDDEV(zcr) AS zcr_lower,
@@ -148,30 +139,30 @@ WHERE s.zcr > zcr_upper OR s.zcr < zcr_lower OR
 	  s.flatness > flatness_upper OR s.flatness < flatness_lower OR
 	  s.ste > ste_upper OR s.ste < ste_lower
 
---8) Add 'is_outlier' column
+--7) Add 'is_outlier' column
 WITH my_cte2 AS (
 WITH my_cte AS(
-	SELECT snr,
+	SELECT s.snr,
 		AVG(zcr) + 3*STDDEV(zcr) AS zcr_upper, AVG(zcr) - 3*STDDEV(zcr) AS zcr_lower,
 		AVG(centroid) + 3*STDDEV(centroid) AS centroid_upper, AVG(centroid) - 3*STDDEV(centroid) AS centroid_lower,
 		AVG(flatness) + 3*STDDEV(flatness) AS flatness_upper, AVG(flatness) - 3*STDDEV(flatness) AS flatness_lower,
 		AVG(ste) + 3*STDDEV(ste) AS ste_upper, AVG(ste) - 3*STDDEV(ste) AS ste_lower	
-	FROM speech_features_clean
-	GROUP BY snr
+	FROM speech_features_clean s
+	GROUP BY s.snr
 )
-SELECT * FROM speech_features_clean s
+SELECT s.* FROM speech_features_clean s
 JOIN my_cte t
 	ON s.snr = t.snr
 WHERE s.zcr > zcr_upper OR s.zcr < zcr_lower OR
 	  s.centroid > centroid_upper OR s.centroid < centroid_lower OR
 	  s.flatness > flatness_upper OR s.flatness < flatness_lower OR
 	  s.ste > ste_upper OR s.ste < ste_lower
-)
-SELECT file, snr, 
-CASE WHEN file IN (SELECT file FROM my_cte2) THEN TRUE ELSE FALSE END AS is_outlier
-FROM speech_features_clean
+) 
+SELECT s.file, s.snr, 
+CASE WHEN (s.file, s.snr) IN (SELECT o.file, o.snr FROM my_cte2 o) THEN TRUE ELSE FALSE END AS is_outlier
+FROM speech_features_clean s
 
---9) Analysis of outliers i.e. count of outliers per snr.
+--8) Analysis of outliers i.e. count of outliers per snr.
 SELECT sub.snr, sub.channel_quality, COUNT(*)
 FROM (
     WITH my_cte AS(
@@ -194,21 +185,62 @@ GROUP BY sub.snr, sub.channel_quality
 ORDER BY sub.snr DESC;
 
 
--- 10)	Feature correlation Exploration. This helps detect redundant features like mfcc1 highly correlated with mfcc_2
-SELECT 
-CORR(mfcc_1,mfcc_2) AS corr_mfcc12,
-CORR(mfcc_1,mfcc_3) AS corr_mfcc13,
-CORR(zcr,flatness) AS corr_zcr_flatness,
-CORR(zcr,centroid) AS corr_zcr_centroid
-FROM speech_features_clean
-
--- 11) Create final datset for ML model traiing and classification.
-CREATE TABLE speech_features_final_dataset AS
+-- 9) Create datset for ML model traiing and classification.
+CREATE TABLE speech_data_with_outliers AS
 SELECT snr, mfcc_1, mfcc_2, mfcc_3, mfcc_4, mfcc_5, mfcc_6, mfcc_7, mfcc_8, mfcc_9, mfcc_10, mfcc_11, mfcc_12, mfcc_13,
 delta_mfcc_1, delta_mfcc_2, delta_mfcc_3, delta_mfcc_4, delta_mfcc_5, delta_mfcc_6, delta_mfcc_7, delta_mfcc_8,
 delta_mfcc_9, delta_mfcc_10, delta_mfcc_11, delta_mfcc_12, delta_mfcc_13, zcr, centroid, flatness, ste, channel_quality
 FROM speech_features_clean
 
-SELECT * FROM speech_features_final_dataset
+SELECT * FROM speech_data_with_outliers
+
+-- 10) Create dataset without outliers.
+CREATE TABLE speech_data_without_outliers AS
+WITH my_cte AS(
+	SELECT snr,
+		AVG(zcr) + 3*STDDEV(zcr) AS zcr_upper, AVG(zcr) - 3*STDDEV(zcr) AS zcr_lower,
+		AVG(centroid) + 3*STDDEV(centroid) AS centroid_upper, AVG(centroid) - 3*STDDEV(centroid) AS centroid_lower,
+		AVG(flatness) + 3*STDDEV(flatness) AS flatness_upper, AVG(flatness) - 3*STDDEV(flatness) AS flatness_lower,
+		AVG(ste) + 3*STDDEV(ste) AS ste_upper, AVG(ste) - 3*STDDEV(ste) AS ste_lower	
+	FROM speech_features_clean
+	GROUP BY snr
+),
+my_cte2 AS(
+SELECT s.* FROM speech_features_clean s
+JOIN my_cte t
+ON s.snr = t.snr
+WHERE s.zcr > t.zcr_upper OR s.zcr < t.zcr_lower OR
+	  s.centroid > t.centroid_upper OR s.centroid < t.centroid_lower OR
+	  s.flatness > t.flatness_upper OR s.flatness < t.flatness_lower OR
+	  s.ste > t.ste_upper OR s.ste < t.ste_lower
+)
+SELECT snr, mfcc_1, mfcc_2, mfcc_3, mfcc_4, mfcc_5, mfcc_6, mfcc_7, mfcc_8, mfcc_9, mfcc_10, mfcc_11, mfcc_12, mfcc_13,
+delta_mfcc_1, delta_mfcc_2, delta_mfcc_3, delta_mfcc_4, delta_mfcc_5, delta_mfcc_6, delta_mfcc_7, delta_mfcc_8,
+delta_mfcc_9, delta_mfcc_10, delta_mfcc_11, delta_mfcc_12, delta_mfcc_13, zcr, centroid, flatness, ste, channel_quality
+FROM speech_features_clean s
+WHERE (s.file, s.snr)  NOT IN (SELECT o.file, o.snr FROM my_cte2 o)
+
+SELECT * FROM speech_data_without_outliers
+
+-- 11)	Compare feature drift across SNR. For some features like spectral flatness, zcr, you may observe that values increase as noise increases.
+-- a) speech_data_with_outliers dataset
+
+SELECT snr, AVG(zcr) AS avg_zcr, 
+AVG(flatness) AS avg_flatness, 
+AVG(centroid) AS avg_centroid, 
+AVG(ste) AS avg_ste
+FROM speech_data_with_outliers
+GROUP BY snr
+ORDER BY snr DESC
+
+-- b) speech_data_without_outliers dataset
+SELECT snr, AVG(zcr) AS avg_zcr, 
+AVG(flatness) AS avg_flatness, 
+AVG(centroid) AS avg_centroid, 
+AVG(ste) AS avg_ste
+FROM speech_data_without_outliers
+GROUP BY snr
+ORDER BY snr DESC
+
 
 
