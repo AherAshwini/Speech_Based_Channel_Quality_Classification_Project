@@ -1,5 +1,5 @@
 from src.data_generation.data_loader import get_random_audio_files
-from src.config.config import DATASET_PATH, IGNORE_FOLDERS, NUM_AUDIO_FILES, SNR_LEVELS, NUM_MFCC, FRAME_LENGTH, HOP_LENGTH
+from src.config.configuration import DATASET_PATH, IGNORE_FOLDERS, NUM_AUDIO_FILES, SNR_LEVELS, NUM_MFCC, FRAME_LENGTH, HOP_LENGTH
 from src.data_generation.channel_simulator import load_audio, add_awgn_noise
 from src.data_generation.feature_extractor import extract_features
 from src.logger import logger
