@@ -6,4 +6,5 @@ librosa
 sqlalchemy
 psycopg2
 dotenv
+dill
 #-e .

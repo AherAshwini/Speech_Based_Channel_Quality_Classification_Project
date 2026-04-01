@@ -37,3 +37,10 @@ class DataIngestionConfig:
     table1_name: str = "speech_data_with_outliers"
     table2_name: str = "speech_data_without_outliers"
 
+@dataclass
+class DataTransofmationConfig:
+    preprocessor_obj_file_path_w = os.path.join("artifacts","preprocessor_w.pkl")
+    label_encoder_file_path_w = os.path.join("artifacts","label_encoder_w.pkl")
+    preprocessor_obj_file_path_wo = os.path.join("artifacts","preprocessor_wo.pkl")
+    label_encoder_file_path_wo = os.path.join("artifacts","label_encoder_wo.pkl")
+    

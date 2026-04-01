@@ -1,12 +1,14 @@
 import sys
 import os
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
 from src.exception import CustomException
 from src.logger import logger
 from src.config.database import get_engine
 from src.config.configuration import DataIngestionConfig
-import pandas as pd
-
-from sklearn.model_selection import train_test_split
+from src.components.data_transformation import DataTransformation
+from src.config.configuration import DataTransofmationConfig
 
 
 class DataIngestion:
@@ -64,4 +66,10 @@ class DataIngestion:
 if __name__ == '__main__':
     obj = DataIngestion()
     train_w, test_w, train_wo, test_wo = obj.initiate_data_ingestion()
+
+    data_transformation = DataTransformation()
+    train_arr_w, test_arr_w, preprocessor_w, label_encoder_w = data_transformation.initiate_data_transformation_w(train_w, test_w)
+    train_arr_wo, test_arr_wo, preprocessor_wo, label_encoder_wo = data_transformation.initiate_data_transformation_wo(train_wo, test_wo)
+
+
 
