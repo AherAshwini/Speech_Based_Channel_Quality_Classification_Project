@@ -44,3 +44,7 @@ class DataTransofmationConfig:
     preprocessor_obj_file_path_wo = os.path.join("artifacts","preprocessor_wo.pkl")
     label_encoder_file_path_wo = os.path.join("artifacts","label_encoder_wo.pkl")
     
+@dataclass
+class ModelTrainerConfig:
+    trained_model_file_path = os.path.join("artifacts","model.pkl")
+    

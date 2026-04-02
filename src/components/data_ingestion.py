@@ -8,7 +8,8 @@ from src.logger import logger
 from src.config.database import get_engine
 from src.config.configuration import DataIngestionConfig
 from src.components.data_transformation import DataTransformation
-from src.config.configuration import DataTransofmationConfig
+from src.components.model_trainer import ModelTrainer 
+from src.config.configuration import DataTransofmationConfig, ModelTrainerConfig
 
 
 class DataIngestion:
@@ -70,6 +71,9 @@ if __name__ == '__main__':
     data_transformation = DataTransformation()
     train_arr_w, test_arr_w, preprocessor_w, label_encoder_w = data_transformation.initiate_data_transformation_w(train_w, test_w)
     train_arr_wo, test_arr_wo, preprocessor_wo, label_encoder_wo = data_transformation.initiate_data_transformation_wo(train_wo, test_wo)
+
+    modeltrainer = ModelTrainer()
+    print(modeltrainer.initiate_model_trainer(train_array_w=train_arr_w,test_array_w=test_arr_w))
 
 
 
