@@ -73,7 +73,13 @@ if __name__ == '__main__':
     train_arr_wo, test_arr_wo, preprocessor_wo, label_encoder_wo = data_transformation.initiate_data_transformation_wo(train_wo, test_wo)
 
     modeltrainer = ModelTrainer()
-    print(modeltrainer.initiate_model_trainer(train_array_w=train_arr_w,test_array_w=test_arr_w))
+    acc_score_with_outliers = modeltrainer.initiate_model_trainer_w(
+        train_array_w=train_arr_w,test_array_w=test_arr_w)
+    acc_score_without_outliers = modeltrainer.initiate_model_trainer_wo(
+        train_array_wo=train_arr_wo,test_array_wo=test_arr_wo)
+    
+    print(f"Accuracy score (with outliers): {acc_score_with_outliers}")
+    print(f"Accuracy score (without outliers): {acc_score_without_outliers}")
 
 
 
