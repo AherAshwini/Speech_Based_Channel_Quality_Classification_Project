@@ -28,6 +28,8 @@ Google Speech Commands Dataset
 - Logistic Regression Accuracy: ~87%
 
 ## Repository Structure
+
+```text
 ├── SQL 			# PostgreSQL queries for data cleaning and analysis
 ├── artifacts 			# Saved models and generated outputs
 ├── notebook 			# Exploratory data analysis (EDA) and model model training notebooks
@@ -37,6 +39,7 @@ Google Speech Commands Dataset
 ├── requirements.txt
 ├── setup.py
 └── speech_features.csv 	# Extracted speech features dataset
+```
 
 
 
