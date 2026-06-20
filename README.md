@@ -30,10 +30,10 @@ Google Speech Commands Dataset
 ## Repository Structure
 
 ```text
-├── SQL 			# PostgreSQL queries for data cleaning and analysis
+├── SQL 			      # PostgreSQL queries for data cleaning and analysis
 ├── artifacts 			# Saved models and generated outputs
-├── notebook 			# Exploratory data analysis (EDA) and model model training notebooks
-├── src 			# Source code for data generation, feature extraction, and modeling
+├── notebook 			  # Exploratory data analysis (EDA) and model model training notebooks
+├── src 		      	# Source code for data generation, feature extraction, and modeling
 ├── .gitignore
 ├── README.md
 ├── requirements.txt
